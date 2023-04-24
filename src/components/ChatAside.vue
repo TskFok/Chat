@@ -32,6 +32,8 @@
 
 <script>
 import SendRequest from "@/plugins/axiosInstance";
+import {ElNotification} from "element-plus";
+import router from "@/plugins/router";
 
 export default {
     name: "ChatAside",
@@ -95,7 +97,15 @@ export default {
                 }
             }
         }).catch((err) => {
-            console.log(err)
+            if (err.response.status === 401) {
+                ElNotification({
+                    title: "登陆失败",
+                    message: "请重新登陆",
+                    type: 'error',
+                })
+                router.push("/signIn")
+                localStorage.removeItem("token")
+            }
         });
     }
 }
