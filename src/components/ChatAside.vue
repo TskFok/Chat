@@ -10,7 +10,7 @@
             <el-sub-menu index="1">
                 <template #title>
                     <el-icon>
-                        <location/>
+                        <ChatLineSquare/>
                     </el-icon>
                     <span>历史记录</span>
                 </template>
@@ -20,7 +20,7 @@
             </el-sub-menu>
             <el-menu-item index="2-d">
                 <el-icon>
-                    <icon-menu/>
+                    <Delete/>
                 </el-icon>
                 <span>清除历史记录</span>
             </el-menu-item>
