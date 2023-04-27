@@ -3,10 +3,8 @@
         <h5 class="mb-2">Custom colors</h5>
         <el-menu
                 active-text-color="#ffd04b"
-                background-color="#545c64"
                 class="el-menu-vertical-demo"
                 default-active="2"
-                text-color="#fff"
                 @select="handleSelect"
         >
             <el-sub-menu index="1">
@@ -114,5 +112,10 @@ export default {
 <style scoped>
 .el-col {
     margin-top: -38px;
+}
+.el-menu-vertical-demo:not(.el-menu--collapse) {
+    width: 200px;
+    min-height: 440px;
+    max-height: 440px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <el-container>
+    <el-container class="main">
         <el-header>
             <ChatHeader/>
         </el-header>
@@ -9,7 +9,7 @@
             </el-aside>
             <el-container>
                 <el-main>
-                    <el-scrollbar height="500px" style="background-color: white">
+                    <el-scrollbar height="600px" style="background-color: white">
                         <p v-for="item in this.items" :key="item">
                             <el-row>
                                 <el-col :span="4" class="radius">

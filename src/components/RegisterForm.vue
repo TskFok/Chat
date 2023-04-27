@@ -73,3 +73,12 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.login-type {
+    margin-top: 10%
+}
+.row-bg {
+    margin-bottom: 10%;
+}
+</style>

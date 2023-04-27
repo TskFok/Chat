@@ -4,7 +4,7 @@ import SignInForm from "@/components/SignInForm.vue";
 </script>
 <template>
     <div>
-        <div class="main-login">
+        <div class="main main-login">
             <LoginMenu/>
             <SignInForm/>
         </div>
@@ -25,3 +25,15 @@ export default {
 }
 </script>
 
+<style scoped>
+.main-login {
+    margin-left: 33.5%;
+    margin-top: 15%;
+    border-radius: 4px;
+    border: 1px solid;
+    height: 300px;
+    width: 400px;
+    background-color: aliceblue;
+}
+
+</style>
