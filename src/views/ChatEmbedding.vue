@@ -9,7 +9,7 @@
             </el-aside>
             <el-container>
                 <el-main>
-                    <el-scrollbar height="600px" style="background-color: white">
+                    <el-scrollbar height="580px" style="background-color: white">
                         <p v-for="item in this.items" :key="item">
                             <el-row>
                                 <el-col :span="4" class="radius">
