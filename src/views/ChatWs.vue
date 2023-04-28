@@ -10,7 +10,7 @@
             <el-container>
                 <el-main>
                     <el-scrollbar height="580px" style="background-color: white">
-                        <p v-for="item in this.items" :key="item">
+                        <p v-for="item in this.items.cInfo" :key="item">
                             <el-row>
                                 <el-col :span="4" class="radius">
                                     <template v-if="item.type==='question'">
@@ -63,22 +63,11 @@ import answerHeaderImg from "@/assets/3.gif"
 import questionHeaderImg from "@/assets/2.gif"
 import ChatHeader from "@/components/ChatHeader.vue";
 import ChatAside from "@/components/ChatAside.vue";
+import {ref, reactive} from "vue";
 
 export default {
     name: "ChatWs",
     components: {ChatAside, ChatHeader, ChatFooter},
-    data() {
-        return {
-            items: [
-                {
-                    "value": "你好👋,你想问啥",
-                    "type": "answer"
-                }
-            ],
-            answerHeader: answerHeaderImg,
-            questionHeader: questionHeaderImg
-        }
-    },
     beforeCreate() {
         if (!localStorage.getItem("token")) {
             ElNotification({
@@ -88,59 +77,101 @@ export default {
             })
             router.push("/signIn")
         }
+
+        this.reset()
     },
-    mounted() {
+    setup() {
+        const childIt = ref()
         let rand = Math.round(Math.random() * 100000 + 100000);
         let token = localStorage.getItem("token")
-        this.ws = new WebSocket(
-            'wss://' + import.meta.env.VITE_BASIC_API + '/ws/gpt/channel-' + rand, [token]
-        );
+        let close = ref(false)
+        let waiting = ref("")
 
-        this.ws.onopen = function (e) {
-            console.log(e)
-        }
+        let items = reactive({
+            cInfo: [
+                {
+                    "value": "你好👋,你想问啥",
+                    "type": "answer"
+                }
+            ]
+        })
 
-        let items = this.items
-        this.ws.onmessage = function (e) {
-            if (e.data !== "<<stop>>") {
-                items[items.length - 1].value += e.data
+        let answerHeader = answerHeaderImg
+        let questionHeader = questionHeaderImg
+        let ws = ref()
+
+        function reset() {
+            ws = new WebSocket(
+                'wss://' + import.meta.env.VITE_BASIC_API + '/ws/gpt/channel-' + rand, [token]
+            );
+
+            ws.onopen = function (e) {
+                close.value = false
+
+                if (waiting.value !== "") {
+                    ws.send(waiting.value)
+                    waiting.value = ""
+                }
             }
-        };
-        this.ws.onclose = function (e) {
-            if (e.code === 8888) {
+
+            ws.onmessage = function (e) {
+                if (e.data !== "<<stop>>") {
+                    items.cInfo[items.cInfo.length - 1].value += e.data
+                }
+            };
+            ws.onclose = function (e) {
+                close.value = true
+                if (e.code === 8888) {
+                    ElNotification({
+                        title: "登陆失败",
+                        message: "请重新登陆",
+                        type: 'error',
+                    })
+                    router.push("/signIn")
+                    localStorage.removeItem("token")
+                }
+            };
+            ws.onerror = function (e) {
+                close.value = true
                 ElNotification({
-                    title: "登陆失败",
-                    message: "请重新登陆",
+                    title: "ws连接失败",
+                    message: "请刷新重试",
                     type: 'error',
                 })
-                router.push("/signIn")
-                localStorage.removeItem("token")
             }
-        };
-        this.ws.onerror = function (e) {
-            ElNotification({
-                title: "ws连接失败",
-                message: "请刷新重试",
-                type: 'error',
-            })
         }
-    },
-    methods: {
-        receiveSend(e) {
-            this.$refs.childIt.addList(e.question)
 
-            this.items.push({
+        function receiveSend(e) {
+            childIt.value.addList(e.question)
+
+            items.cInfo.push({
                 "value": e.question,
                 "type": "question"
             })
 
-            this.items.push({
+            items.cInfo.push({
                 "value": "",
                 "type": "answer"
             })
-            this.ws.send(JSON.stringify(e))
+
+            if (close.value) {
+                reset()
+
+                waiting.value = JSON.stringify(e)
+            } else {
+                ws.send(JSON.stringify(e))
+            }
         }
-    }
+
+        return {
+            receiveSend,
+            reset,
+            items,
+            answerHeader,
+            questionHeader,
+            childIt,
+        }
+    },
 }
 </script>
 
