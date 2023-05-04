@@ -1,32 +1,34 @@
 <template>
     <el-row class="row-bg">
         <el-col :span="12" :offset="6">
-            <el-input v-model="question" ref="questionInput" placeholder="提问" @keydown.enter="send"/>
+            <el-input v-model="question" autofocus ref="questionInput" placeholder="提问" @keydown.enter="send"/>
         </el-col>
     </el-row>
 </template>
 
 <script>
+import {nextTick, ref, watch} from "vue";
+
 export default {
     name: "ChatFooter",
-    data() {
-        return {
-            question: ""
-        }
+    beforeCreate() {
     },
-    mounted() {
-        this.$nextTick(() => {
-            //自动聚焦提问框
-            this.$refs.questionInput.focus()
-        })
-    },
-    methods: {
-        send() {
-            this.$emit('send', {question: this.question})
-            this.question = ""
+    setup(props, {emit}) {
+        const question = ref("")
+        const questionInput = ref()
 
+        function send() {
+            emit('send', {question: question.value})
+            question.value = ""
+            questionInput.value.focus()
         }
-    }
+
+        return {
+            question,
+            questionInput,
+            send,
+        }
+    },
 }
 </script>
 

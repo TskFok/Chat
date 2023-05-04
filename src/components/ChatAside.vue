@@ -14,7 +14,7 @@
                     </el-icon>
                     <span>历史记录</span>
                 </template>
-                <p v-for="historyItem in this.historyList" :key="historyItem">
+                <p v-for="historyItem in this.historyList.info" :key="historyItem">
                     <el-menu-item :index="historyItem.id">{{ historyItem.content }}</el-menu-item>
                 </p>
             </el-sub-menu>
@@ -32,16 +32,18 @@
 import SendRequest from "@/plugins/axiosInstance";
 import {ElNotification} from "element-plus";
 import router from "@/plugins/router";
+import {reactive} from "vue";
 
 export default {
     name: "ChatAside",
-    data() {
-        return {
-            historyList: []
-        }
-    },
-    methods: {
-        handleSelect(key) {
+    setup(props, {emit}) {
+        const historyList = reactive(
+            {
+                info: []
+            }
+        )
+
+        function handleSelect(key) {
             if (key === '2-d') {
                 SendRequest({
                     method: 'delete',
@@ -50,35 +52,44 @@ export default {
                         token: localStorage.getItem("token")
                     },
                 }).then((resp) => {
-                    this.historyList = []
-                    this.$emit('clear')
+                    historyList.info = []
+                    emit('clear')
                 }).catch((err) => {
                     console.log(err)
                 });
             } else {
-                for (let i = 0; i < this.historyList.length; i++) {
-                    if (this.historyList[i].id === key) {
-                        this.send(this.historyList[i].content)
+                for (let i = 0; i < historyList.info.length; i++) {
+                    if (historyList.info[i].id === key) {
+                        emit('send', {question: historyList.info[i].content})
                         break
                     }
                 }
             }
-        },
-        send(content) {
-            this.$emit('send', {question: content})
-        },
-        addList(content) {
-            for (let i = this.historyList.length; i > 0; i--) {
-                this.historyList[i] = this.historyList[i - 1]
+        }
+
+        function send(content) {
+            emit('send', {question: content})
+        }
+
+        function addList(content) {
+            for (let i = historyList.info.length; i > 0; i--) {
+                historyList.info[i] = historyList.info[i - 1]
             }
-            this.historyList[0] = {
+            historyList.info[0] = {
                 'content': content,
                 'id': Math.random(),
             }
-            this.historyList.splice(8, 10)
+            historyList.info.splice(8, 10)
+        }
+
+        return {
+            historyList,
+            handleSelect,
+            send,
+            addList
         }
     },
-    mounted() {
+    beforeCreate() {
         SendRequest({
             method: 'get',
             url: '/history',
@@ -89,7 +100,7 @@ export default {
             let data = resp.data
             for (let i = 0; i < data.length; i++) {
                 if (data[i] != null) {
-                    this.historyList.push({
+                    this.historyList.info.push({
                         'content': data[i].Content,
                         'id': data[i].Id,
                     })
