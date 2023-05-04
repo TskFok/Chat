@@ -5,7 +5,7 @@
         </el-header>
         <el-container>
             <el-aside>
-                <ChatAside @send="receiveSend" ref="childIt"/>
+                <ChatAside @clear="clear" @send="receiveSend" ref="childIt"/>
             </el-aside>
             <el-container>
                 <el-main>
@@ -150,13 +150,23 @@ export default {
             }
         }
 
+        function clear() {
+            items.cInfo = [
+                {
+                    "value": "你好👋,你想问啥",
+                    "type": "answer"
+                }
+            ]
+        }
+
         return {
             reset,
             receiveSend,
             answerHeader,
             questionHeader,
             childIt,
-            items
+            items,
+            clear
         }
     },
     beforeCreate() {

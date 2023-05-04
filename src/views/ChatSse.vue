@@ -5,12 +5,12 @@
         </el-header>
         <el-container>
             <el-aside>
-                <ChatAside @send="receiveSend" ref="childIt"/>
+                <ChatAside @clear="clear" @send="receiveSend" ref="childIt"/>
             </el-aside>
             <el-container>
                 <el-main>
                     <el-scrollbar max-height="580px" style="background-color: white">
-                        <p v-for="item in this.items" :key="item">
+                        <p v-for="item in this.items.cInfo" :key="item">
                             <el-row>
                                 <el-col :span="4" class="radius">
                                     <template v-if="item.type==='question'">
@@ -63,22 +63,11 @@ import answerHeaderImg from "@/assets/3.gif";
 import questionHeaderImg from "@/assets/2.gif";
 import ChatHeader from "@/components/ChatHeader.vue";
 import ChatAside from "@/components/ChatAside.vue";
+import {reactive, ref} from "vue";
 
 export default {
     name: "ChatSse",
     components: {ChatAside, ChatHeader, ChatFooter},
-    data() {
-        return {
-            items: [
-                {
-                    "value": "你好👋,你想问啥",
-                    "type": "answer"
-                }
-            ],
-            answerHeader: answerHeaderImg,
-            questionHeader: questionHeaderImg
-        }
-    },
     beforeCreate() {
         if (!localStorage.getItem("token")) {
             ElNotification({
@@ -89,42 +78,61 @@ export default {
             router.push("/signIn")
         }
     },
-    methods: {
-        receiveSend(data) {
+    setup() {
+        const items = reactive({
+            cInfo: [
+                {
+                    "value": "你好👋,你想问啥",
+                    "type": "answer"
+                }
+            ]
+        })
+
+        const answerHeader = answerHeaderImg
+        const questionHeader = questionHeaderImg
+        const childIt = ref()
+
+        function clear() {
+            items.cInfo = [
+                {
+                    "value": "你好👋,你想问啥",
+                    "type": "answer"
+                }
+            ]
+        }
+
+        function receiveSend(data) {
             if (data.question === undefined || data.question === "") {
                 alert("请输入提问")
 
                 return
             }
 
-            this.$refs.childIt.addList(data.question)
+            childIt.value.addList(data.question)
 
-            this.items.push({
+            items.cInfo.push({
                 "value": data.question,
                 "type": "question"
             })
 
-            let ii = JSON.stringify(this.items)
-
-            this.items.push({
+            items.cInfo.push({
                 "value": "",
                 "type": "answer"
             })
 
             let token = localStorage.getItem("token")
 
-            const stream = new EventSourcePolyfill("https://" + import.meta.env.VITE_BASIC_API + "/sse?question=" + ii, {
+            const stream = new EventSourcePolyfill("https://" + import.meta.env.VITE_BASIC_API + "/sse?question=" + data.question, {
                 headers: {
                     'token': token
                 }
             });
 
-            let items = this.items
             stream.addEventListener("message", function (e) {
                 if (e.data === "<<emptystring>>") {
-                    items[items.length - 1].value += " "
+                    items.cInfo[items.cInfo.length - 1].value += " "
                 } else {
-                    items[items.length - 1].value += e.data
+                    items.cInfo[items.cInfo.length - 1].value += e.data
                 }
             });
             stream.addEventListener("stop", function (e) {
@@ -144,7 +152,16 @@ export default {
                 stream.close()
             }
         }
-    }
+
+        return {
+            items,
+            answerHeader,
+            questionHeader,
+            receiveSend,
+            clear,
+            childIt
+        }
+    },
 }
 </script>
 

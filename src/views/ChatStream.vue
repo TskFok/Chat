@@ -5,12 +5,12 @@
         </el-header>
         <el-container>
             <el-aside>
-                <ChatAside @send="receiveSend" ref="childIt"/>
+                <ChatAside @clear="clear" @send="receiveSend" ref="childIt"/>
             </el-aside>
             <el-container>
                 <el-main>
                     <el-scrollbar height="580px" style="background-color: white">
-                        <p v-for="item in this.items" :key="item">
+                        <p v-for="item in this.items.cInfo" :key="item">
                             <el-row>
                                 <el-col :span="4" class="radius">
                                     <template v-if="item.type==='question'">
@@ -62,50 +62,48 @@ import answerHeaderImg from "@/assets/3.gif";
 import questionHeaderImg from "@/assets/2.gif";
 import {ElNotification} from "element-plus";
 import router from "@/plugins/router";
+import {reactive, ref} from "vue";
 
 export default {
     name: "ChatStream",
     components: {ChatHeader, ChatFooter, ChatAside},
-    data() {
-        return {
-            items: [
+    setup() {
+        const childIt = ref()
+        const items = reactive({
+            cInfo: [
                 {
                     "value": "你好👋,你想问啥",
                     "type": "answer"
                 }
-            ],
-            answerHeader: answerHeaderImg,
-            questionHeader: questionHeaderImg
+            ]
+        })
+        const answerHeader = answerHeaderImg
+        const questionHeader = questionHeaderImg
+
+        function clear() {
+            items.cInfo = [
+                {
+                    "value": "你好👋,你想问啥",
+                    "type": "answer"
+                }
+            ]
         }
-    },
-    beforeCreate() {
-        if (!localStorage.getItem("token")) {
-            ElNotification({
-                title: "登陆失效",
-                message: "请重新登陆",
-                type: 'error',
-            })
-            router.push("/signIn")
-        }
-    },
-    methods: {
-        receiveSend(data) {
+
+        function receiveSend(data) {
             if (data.question === undefined || data.question === "") {
                 alert("请输入提问")
 
                 return
             }
 
-            this.$refs.childIt.addList(data.question)
+            childIt.value.addList(data.question)
 
-            this.items.push({
+            items.cInfo.push({
                 "value": data.question,
                 "type": "question"
             })
 
-            let ii = JSON.stringify(this.items)
-
-            this.items.push({
+            items.cInfo.push({
                 "value": "",
                 "type": "answer"
             })
@@ -123,15 +121,15 @@ export default {
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xhr.setRequestHeader("token", localStorage.getItem("token"));
             xhr.timeout = 40000 //设置超时时间40s
-            xhr.send("question=" + encodeURIComponent(ii));
+            xhr.send("question=" + encodeURIComponent(data.question));
 
             let timer;
-            let items = this.items
+
             timer = window.setInterval(function () {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     window.clearTimeout(timer);
                 } else {
-                    items[items.length - 1].value = xhr.responseText
+                    items.cInfo[items.cInfo.length - 1].value = xhr.responseText
                 }
             }, 50);
 
@@ -140,7 +138,26 @@ export default {
                 console.log(event)
             }
         }
-    }
+
+        return {
+            childIt,
+            items,
+            answerHeader,
+            questionHeader,
+            receiveSend,
+            clear
+        }
+    },
+    beforeCreate() {
+        if (!localStorage.getItem("token")) {
+            ElNotification({
+                title: "登陆失效",
+                message: "请重新登陆",
+                type: 'error',
+            })
+            router.push("/signIn")
+        }
+    },
 }
 </script>
 

@@ -51,6 +51,7 @@ export default {
                     },
                 }).then((resp) => {
                     this.historyList = []
+                    this.$emit('clear')
                 }).catch((err) => {
                     console.log(err)
                 });
@@ -113,6 +114,7 @@ export default {
 .el-col {
     margin-top: -38px;
 }
+
 .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 200px;
     min-height: 440px;
