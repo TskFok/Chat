@@ -47,7 +47,7 @@
                     </el-scrollbar>
                 </el-main>
                 <el-footer>
-                    <ChatFooter @send="receiveSend"/>
+                    <ChatFooter @send="receiveSend" ref="footer"/>
                 </el-footer>
             </el-container>
         </el-container>
@@ -63,7 +63,7 @@ import answerHeaderImg from "@/assets/3.gif";
 import questionHeaderImg from "@/assets/2.gif";
 import ChatHeader from "@/components/ChatHeader.vue";
 import ChatAside from "@/components/ChatAside.vue";
-import {reactive, ref} from "vue";
+import {onMounted, reactive, ref} from "vue";
 
 export default {
     name: "ChatSse",
@@ -91,6 +91,7 @@ export default {
         const answerHeader = answerHeaderImg
         const questionHeader = questionHeaderImg
         const childIt = ref()
+        const footer = ref()
 
         function clear() {
             items.cInfo = [
@@ -99,6 +100,7 @@ export default {
                     "type": "answer"
                 }
             ]
+            footer.value.force()
         }
 
         function receiveSend(data) {
@@ -136,7 +138,6 @@ export default {
                 }
             });
             stream.addEventListener("stop", function (e) {
-                console.log(e)
                 stream.close()
             });
             stream.onerror = function (event) {
@@ -151,6 +152,8 @@ export default {
                 }
                 stream.close()
             }
+
+            footer.value.force()
         }
 
         return {
@@ -159,7 +162,8 @@ export default {
             questionHeader,
             receiveSend,
             clear,
-            childIt
+            childIt,
+            footer,
         }
     },
 }

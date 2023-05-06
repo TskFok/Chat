@@ -47,7 +47,7 @@
                     </el-scrollbar>
                 </el-main>
                 <el-footer>
-                    <ChatFooter @send="receiveSend"/>
+                    <ChatFooter @send="receiveSend" ref="footer"/>
                 </el-footer>
             </el-container>
         </el-container>
@@ -69,6 +69,7 @@ export default {
     components: {ChatAside, ChatHeader, ChatFooter},
     setup() {
         const childIt = ref()
+        const footer = ref()
         let close = ref(false)
         let waiting = ref("")
 
@@ -129,6 +130,7 @@ export default {
         }
 
         function receiveSend(e) {
+            footer.value.force()
             childIt.value.addList(e.question)
 
             items.cInfo.push({
@@ -157,6 +159,7 @@ export default {
                     "type": "answer"
                 }
             ]
+            footer.value.force()
         }
 
         return {
@@ -166,7 +169,8 @@ export default {
             questionHeader,
             childIt,
             items,
-            clear
+            clear,
+            footer
         }
     },
     beforeCreate() {

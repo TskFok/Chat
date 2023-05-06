@@ -7,12 +7,10 @@
 </template>
 
 <script>
-import {nextTick, ref, watch} from "vue";
+import {nextTick, onMounted, ref, watch} from "vue";
 
 export default {
     name: "ChatFooter",
-    beforeCreate() {
-    },
     setup(props, {emit}) {
         const question = ref("")
         const questionInput = ref()
@@ -20,6 +18,9 @@ export default {
         function send() {
             emit('send', {question: question.value})
             question.value = ""
+        }
+
+        function force() {
             questionInput.value.focus()
         }
 
@@ -27,6 +28,7 @@ export default {
             question,
             questionInput,
             send,
+            force
         }
     },
 }

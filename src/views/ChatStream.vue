@@ -47,7 +47,7 @@
                     </el-scrollbar>
                 </el-main>
                 <el-footer>
-                    <ChatFooter @send="receiveSend"/>
+                    <ChatFooter @send="receiveSend" ref="footer"/>
                 </el-footer>
             </el-container>
         </el-container>
@@ -69,6 +69,7 @@ export default {
     components: {ChatHeader, ChatFooter, ChatAside},
     setup() {
         const childIt = ref()
+        const footer = ref()
         const items = reactive({
             cInfo: [
                 {
@@ -87,9 +88,11 @@ export default {
                     "type": "answer"
                 }
             ]
+            footer.value.force()
         }
 
         function receiveSend(data) {
+            footer.value.force()
             if (data.question === undefined || data.question === "") {
                 alert("请输入提问")
 
@@ -145,7 +148,8 @@ export default {
             answerHeader,
             questionHeader,
             receiveSend,
-            clear
+            clear,
+            footer
         }
     },
     beforeCreate() {

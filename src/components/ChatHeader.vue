@@ -31,8 +31,8 @@ import router from "@/plugins/router";
 
 export default {
     name: "ChatHeader",
-    methods: {
-        handleSelect(key, keyPath) {
+    setup(props, {emit}) {
+        function handleSelect(key, keyPath) {
             switch (key) {
                 case "2-1":
                     router.push("/chat/ws")
@@ -51,7 +51,12 @@ export default {
                     router.push("/signIn")
                     break;
             }
-        },
+
+        }
+
+        return {
+            handleSelect
+        }
     }
 }
 </script>

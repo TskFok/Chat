@@ -47,7 +47,7 @@
                     </el-scrollbar>
                 </el-main>
                 <el-footer>
-                    <ChatFooter @send="receiveSend"/>
+                    <ChatFooter @send="receiveSend" ref="footer"/>
                 </el-footer>
             </el-container>
         </el-container>
@@ -82,6 +82,7 @@ export default {
     },
     setup() {
         const childIt = ref()
+        const footer = ref()
         let rand = Math.round(Math.random() * 100000 + 100000);
         let token = localStorage.getItem("token")
         let close = ref(false)
@@ -142,6 +143,7 @@ export default {
         }
 
         function receiveSend(e) {
+            footer.value.force()
             childIt.value.addList(e.question)
 
             items.cInfo.push({
@@ -170,6 +172,7 @@ export default {
                     "type": "answer"
                 }
             ]
+            footer.value.force()
         }
 
         return {
@@ -179,7 +182,8 @@ export default {
             answerHeader,
             questionHeader,
             childIt,
-            clear
+            clear,
+            footer,
         }
     },
 }
