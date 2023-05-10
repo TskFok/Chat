@@ -90,7 +90,7 @@ export default {
             let rand = Math.round(Math.random() * 100000 + 100000);
             let token = localStorage.getItem("token")
             ws = new WebSocket(
-                'wss://' + import.meta.env.VITE_BASIC_API + '/ws/me/channel-' + rand, [token]
+                import.meta.env.VITE_WS_API + '/me/channel-' + rand, [token]
             );
 
             ws.onopen = function (e) {

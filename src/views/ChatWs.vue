@@ -103,7 +103,7 @@ export default {
 
         function reset() {
             ws = new WebSocket(
-                'wss://' + import.meta.env.VITE_BASIC_API + '/ws/gpt/channel-' + rand, [token]
+                import.meta.env.VITE_WS_API + '/gpt/channel-' + rand, [token]
             );
 
             ws.onopen = function (e) {

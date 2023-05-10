@@ -65,12 +65,15 @@ import router from "@/plugins/router";
 import {reactive, ref} from "vue";
 
 export default {
-    name: "ChatStream",
-    components: {ChatHeader, ChatFooter, ChatAside},
+    name: "ChatVicuna",
+    components: {ChatAside, ChatHeader, ChatFooter},
     setup() {
         const childIt = ref()
         const footer = ref()
-        const items = reactive({
+        let close = ref(false)
+        let waiting = ref("")
+
+        let items = reactive({
             cInfo: [
                 {
                     "value": "你好👋,你想问啥",
@@ -78,8 +81,76 @@ export default {
                 }
             ]
         })
-        const answerHeader = answerHeaderImg
-        const questionHeader = questionHeaderImg
+
+        let answerHeader = answerHeaderImg
+        let questionHeader = questionHeaderImg
+        let ws = ref()
+
+        function reset() {
+            let rand = Math.round(Math.random() * 100000 + 100000);
+            let token = localStorage.getItem("token")
+            ws = new WebSocket(
+                import.meta.env.VITE_WS_API + '/vicuna/channel-' + rand, [token]
+            );
+
+            ws.onopen = function (e) {
+                close.value = false
+
+                if (waiting.value !== "") {
+                    ws.send(waiting.value)
+                    waiting.value = ""
+                }
+            }
+
+            ws.onmessage = function (e) {
+                if (e.data !== "<<stop>>") {
+                    items.cInfo[items.cInfo.length - 1].value += e.data
+                }
+            };
+            ws.onclose = function (e) {
+                close.value = true
+                if (e.code === 8888) {
+                    ElNotification({
+                        title: "登陆失败",
+                        message: "请重新登陆",
+                        type: 'error',
+                    })
+                    router.push("/signIn")
+                    localStorage.removeItem("token")
+                }
+            };
+            ws.onerror = function (e) {
+                close.value = true
+                ElNotification({
+                    title: "ws连接失败",
+                    message: "请刷新重试",
+                    type: 'error',
+                })
+            }
+        }
+
+        function receiveSend(e) {
+            footer.value.force()
+            childIt.value.addList(e.question)
+
+            items.cInfo.push({
+                "value": e.question,
+                "type": "question"
+            })
+
+            items.cInfo.push({
+                "value": "",
+                "type": "answer"
+            })
+
+            if (close.value) {
+                reset()
+
+                waiting.value = JSON.stringify(e)
+            } else {
+                ws.send(JSON.stringify(e))
+            }
+        }
 
         function clear() {
             items.cInfo = [
@@ -91,63 +162,13 @@ export default {
             footer.value.force()
         }
 
-        function receiveSend(data) {
-            footer.value.force()
-            if (data.question === undefined || data.question === "") {
-                alert("请输入提问")
-
-                return
-            }
-
-            childIt.value.addList(data.question)
-
-            items.cInfo.push({
-                "value": data.question,
-                "type": "question"
-            })
-
-            items.cInfo.push({
-                "value": "",
-                "type": "answer"
-            })
-
-            let url = import.meta.env.VITE_API + "/stream"
-            let xmlHttp = new XMLHttpRequest();
-
-            if (xmlHttp == null) {
-                alert("Your browser does not support XMLHTTP.");
-                return 0;
-            }
-            let xhr = xmlHttp;
-            xhr.open('POST', url, true);
-            // 如果需要像 HTML 表单那样 POST 数据，请使用 setRequestHeader() 来添加 HTTP 头。然后在 send() 方法中规定您希望发送的数据：
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.setRequestHeader("token", localStorage.getItem("token"));
-            xhr.timeout = 40000 //设置超时时间40s
-            xhr.send("question=" + encodeURIComponent(data.question));
-
-            let timer;
-
-            timer = window.setInterval(function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    window.clearTimeout(timer);
-                } else {
-                    items.cInfo[items.cInfo.length - 1].value = xhr.responseText
-                }
-            }, 50);
-
-            xhr.ontimeout = function (event) {
-                window.clearTimeout(timer);
-                console.log(event)
-            }
-        }
-
         return {
-            childIt,
-            items,
+            reset,
+            receiveSend,
             answerHeader,
             questionHeader,
-            receiveSend,
+            childIt,
+            items,
             clear,
             footer
         }
@@ -161,6 +182,8 @@ export default {
             })
             router.push("/signIn")
         }
+
+        this.reset()
     },
 }
 </script>

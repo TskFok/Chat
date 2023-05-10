@@ -20,6 +20,9 @@
             <el-menu-item index="2-4">
                 embedding测试(战锤40k)
             </el-menu-item>
+            <el-menu-item index="2-5">
+                羊驼
+            </el-menu-item>
         </el-sub-menu>
         <div class="flex-grow"/>
         <el-menu-item index="3" :ellipsis="false">退出</el-menu-item>
@@ -45,6 +48,9 @@ export default {
                     break;
                 case "2-4":
                     router.push("/chat/embedding")
+                    break;
+                case "2-5":
+                    router.push("/chat/vicuna")
                     break;
                 case "3":
                     localStorage.removeItem("token")

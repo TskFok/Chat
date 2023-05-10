@@ -6,6 +6,7 @@ import chatWs from "@/views/ChatWs.vue";
 import Home from "@/views/Home.vue";
 import ChatEmbedding from "@/views/ChatEmbedding.vue";
 import ChatStream from "@/views/ChatStream.vue";
+import ChatVicuna from "@/views/ChatVicuna.vue";
 
 //路由数组
 const routes = [
@@ -38,6 +39,11 @@ const routes = [
         path: "/chat/embedding",
         name: "chat-embedding",
         component: ChatEmbedding,
+        children: []
+    }, {
+        path: "/chat/vicuna",
+        name: "chat-vicuna",
+        component: ChatVicuna,
         children: []
     }, {
         path: "/chat/stream",

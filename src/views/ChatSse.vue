@@ -124,7 +124,7 @@ export default {
 
             let token = localStorage.getItem("token")
 
-            const stream = new EventSourcePolyfill("https://" + import.meta.env.VITE_BASIC_API + "/sse?question=" + data.question, {
+            const stream = new EventSourcePolyfill(import.meta.env.VITE_API + "/sse?question=" + data.question, {
                 headers: {
                     'token': token
                 }
