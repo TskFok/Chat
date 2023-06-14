@@ -1,7 +1,7 @@
 <template>
     <el-container class="main">
         <el-header>
-            <ChatHeader/>
+            <ChatHeader @setup="setup"/>
         </el-header>
         <el-container>
             <el-aside>
@@ -9,6 +9,7 @@
             </el-aside>
             <el-container>
                 <el-main>
+                    <Setup @changeSetup="changeSetup" ref="childSetup"/>
                     <el-scrollbar height="580px" style="background-color: white">
                         <p v-for="item in this.items.cInfo" :key="item">
                             <el-row>
@@ -63,12 +64,14 @@ import questionHeaderImg from "@/assets/2.gif";
 import {ElNotification} from "element-plus";
 import router from "@/plugins/router";
 import {reactive, ref} from "vue";
+import Setup from "@/components/Setup.vue";
 
 export default {
     name: "ChatEmbedding",
-    components: {ChatAside, ChatHeader, ChatFooter},
+    components: {Setup, ChatAside, ChatHeader, ChatFooter},
     setup() {
         const childIt = ref()
+        const childSetup = ref()
         const footer = ref()
         let close = ref(false)
         let waiting = ref("")
@@ -79,7 +82,13 @@ export default {
                     "value": "你好👋,你想问啥",
                     "type": "answer"
                 }
-            ]
+            ],
+            setup: reactive({
+                token: 400,
+                temperature: 0.6,//随机性,越大越随机0-1
+                presence_penalty: 0.6,//话题新鲜度,越大越新鲜-2-2
+                history_num: 5,//附带历史记录数
+            })
         })
 
         let answerHeader = answerHeaderImg
@@ -142,6 +151,7 @@ export default {
                 "value": "",
                 "type": "answer"
             })
+            e.setup = items.setup
 
             if (close.value) {
                 reset()
@@ -162,6 +172,14 @@ export default {
             footer.value.force()
         }
 
+        function setup() {
+            childSetup.value.hide(false)
+        }
+
+        function changeSetup(setup) {
+            items.setup = setup
+        }
+
         return {
             reset,
             receiveSend,
@@ -170,7 +188,10 @@ export default {
             childIt,
             items,
             clear,
-            footer
+            footer,
+            setup,
+            childSetup,
+            changeSetup
         }
     },
     beforeCreate() {

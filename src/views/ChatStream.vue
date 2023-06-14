@@ -1,7 +1,7 @@
 <template>
     <el-container class="main">
         <el-header>
-            <ChatHeader/>
+            <ChatHeader @setup="setup"/>
         </el-header>
         <el-container>
             <el-aside>
@@ -9,6 +9,7 @@
             </el-aside>
             <el-container>
                 <el-main>
+                    <Setup @changeSetup="changeSetup" ref="childSetup"/>
                     <el-scrollbar height="580px" style="background-color: white">
                         <p v-for="item in this.items.cInfo" :key="item">
                             <el-row>
@@ -63,10 +64,11 @@ import questionHeaderImg from "@/assets/2.gif";
 import {ElNotification} from "element-plus";
 import router from "@/plugins/router";
 import {reactive, ref} from "vue";
+import Setup from "@/components/Setup.vue";
 
 export default {
     name: "ChatStream",
-    components: {ChatHeader, ChatFooter, ChatAside},
+    components: {Setup, ChatHeader, ChatFooter, ChatAside},
     setup() {
         const childIt = ref()
         const footer = ref()
@@ -76,8 +78,16 @@ export default {
                     "value": "你好👋,你想问啥",
                     "type": "answer"
                 }
-            ]
+            ],
+            setup: reactive({
+                token: 400,
+                temperature: 0.6,//随机性,越大越随机0-1
+                presence_penalty: 0.6,//话题新鲜度,越大越新鲜-2-2
+                history_num: 5,//附带历史记录数
+            })
         })
+
+        const childSetup = ref()
         const answerHeader = answerHeaderImg
         const questionHeader = questionHeaderImg
 
@@ -124,7 +134,7 @@ export default {
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xhr.setRequestHeader("token", localStorage.getItem("token"));
             xhr.timeout = 40000 //设置超时时间40s
-            xhr.send("question=" + encodeURIComponent(data.question));
+            xhr.send("question=" + encodeURIComponent(data.question) + "&setup=" + JSON.stringify(items.setup));
 
             let timer;
 
@@ -142,6 +152,14 @@ export default {
             }
         }
 
+        function setup() {
+            childSetup.value.hide(false)
+        }
+
+        function changeSetup(setup) {
+            items.setup = setup
+        }
+
         return {
             childIt,
             items,
@@ -149,7 +167,10 @@ export default {
             questionHeader,
             receiveSend,
             clear,
-            footer
+            footer,
+            setup,
+            childSetup,
+            changeSetup
         }
     },
     beforeCreate() {

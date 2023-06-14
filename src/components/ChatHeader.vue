@@ -18,13 +18,11 @@
                 stream接口
             </el-menu-item>
             <el-menu-item index="2-4">
-                embedding测试(战锤40k)
-            </el-menu-item>
-            <el-menu-item index="2-5">
-                羊驼
+                embedding
             </el-menu-item>
         </el-sub-menu>
         <div class="flex-grow"/>
+        <el-menu-item index="4" :ellipsis="false">设置</el-menu-item>
         <el-menu-item index="3" :ellipsis="false">退出</el-menu-item>
     </el-menu>
 </template>
@@ -49,12 +47,12 @@ export default {
                 case "2-4":
                     router.push("/chat/embedding")
                     break;
-                case "2-5":
-                    router.push("/chat/vicuna")
-                    break;
                 case "3":
                     localStorage.removeItem("token")
                     router.push("/signIn")
+                    break;
+                case "4":
+                    emit('setup')
                     break;
             }
 
